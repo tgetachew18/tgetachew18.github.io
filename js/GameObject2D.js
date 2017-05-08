@@ -4,6 +4,7 @@ var GameObject2D = function(gl, program, quadrics, brdfs) {
   for (var i =  0; i < quadrics.length; i++){
     this.material.quadrics[i].set(quadrics[i]);
   }
+  
   for (var i  = 0; i < brdfs.length; i++){
     this.material.bdfs[i].set(brdfs[i]);
   }

@@ -28,7 +28,7 @@ var Scene = function(gl, output) {
     1, 0, 0, 0,  //ax^2 +bxy + cxz + dx +eyx +fy^2 + ... = 0
     0, 1, 0, 0,
     0, 0, 1, 0,
-    0, 0, 0, -16);
+    0, 0, 0, -9);
 
   this.beachBall  = new GameObject2D(gl,this.backprogram, [ballMatrix], []);
 
