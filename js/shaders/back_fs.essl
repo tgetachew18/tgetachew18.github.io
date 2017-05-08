@@ -1,0 +1,163 @@
+shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
+	precision highp float;
+	varying vec2 texCoord;
+	varying vec3 color;
+	uniform samplerCube envmapTexture;
+	uniform sampler2D colorTexture;
+	uniform mat4 quadrics[32];
+	uniform vec4 brdfs[16];
+	varying vec3 rayDir;
+	varying vec4 eyepos;
+
+	float intersectQuadric(mat4 A, vec4 e, vec4 d){
+		//Coefficient matrix : A
+		// Ray origin: e
+		//Ray direction d
+
+		float a = dot(d * A, d);
+		float b = dot(d * A, e) + dot(e * A, d);
+		float c = dot(e * A, e);
+		float discriminant = b * b - 4.0*a*c;
+		if (discriminant < 0.0){
+			return -1.0;
+		}
+		float t1 = (-b - sqrt(discriminant))/(2.0*a);
+		float t2 = (-b + sqrt(discriminant))/(2.0*a);
+		float t = min(t1, t2);
+		if (t >= 0.0){
+			return t;
+		}
+		else{
+			return max(t1, t2);
+		}
+		return t;
+
+
+
+	}
+
+	float intersectClippedQuadric(mat4 A, mat4 B, vec4 e, vec4 d){
+
+
+		float a = dot(d * A, d);
+		float b = dot(d * A, e) + dot(e * A, d);
+		float c = dot(e * A, e);
+		float discriminant = b * b - 4.0*a*c;
+		if (discriminant < 0.0){
+			return -1.0;
+		}
+		float t1 = (-b - sqrt(discriminant))/(2.0*a);
+		vec4 r1 = e + d * t1;
+		float r1inB = dot(r1 * B, r1);
+		if (r1inB > 0.0){
+			t1 = -1.0;
+		}
+		float t2 = (-b + sqrt(discriminant))/(2.0*a);		
+		vec4 r2 = e + d * t2;
+		float r2inB = dot(r2 * B, r2);
+		if (r2inB > 0.0){
+			t2 = -1.0;
+		}
+
+		float t = min(t1, t2);
+		if (t >= 0.0){
+			return t;
+		}
+		else{
+			return max(t1, t2);
+		}
+		return t;
+
+
+
+	}
+
+	float findBestHit( vec4 e, vec4 d){
+		float bestT = 1./0.0 ; //infinity
+		int bestBrdf;
+		mat4 bestA = quadrics[0];
+		for (int i = 0; i < 4; i+=2){
+			mat4 A = quadrics[i];
+			mat4 B = quadrics[i+1];
+			float tempT = intersectClippedQuadric(A, B, e, d);
+			if (tempT > 0.0){
+						bestT = min(tempT, bestT);			
+			}
+		}
+		if (bestT == 1.0/0.0){
+			return -1.0;
+		}
+		return bestT;
+
+	}
+
+
+	void main(void) {
+		mat4 A = mat4(1, 0, 0, 0,   // a h g
+					0, 1, 0, 0,	// h b f
+					0, 0, 1, 0,     // g f c
+					0, 0, 0, -1);
+
+		mat4 B = mat4(	1, 0, 0, 0,
+						0, 0, 0, 0,
+						0, 0, 0, 0,
+						0, 0, 0, -4);
+		vec4 raydirection = vec4(normalize(rayDir), 0 );
+		//float t =intersectClippedQuadric(A, B, eyepos, raydirection);
+		float t = findBestHit(eyepos, raydirection);
+		//float t = intersectQuadric(A,eyepos,raydirection);
+		if (t > 0.0){
+
+			vec4 r = eyepos + raydirection * t;
+
+			r.w = 1.0;
+			vec4 n = normalize( r*A + A*r );	
+			n.w = 1.0;
+
+			float theta = degrees(acos(r.z/length(r)));
+			float phi = degrees(atan(r.y/r.x));
+
+
+			vec4 finalColor;
+
+		   if (phi >-90.0 && phi < -45.0 && theta > 0.0 && theta < 180.0){
+				finalColor = vec4(1,0,0,1);		
+		   }
+			else if (phi >-45.0 && phi < 0.0 && theta > 0.0 && theta < 180.0){
+				finalColor = vec4(0,0,1,1);		
+		   }
+		   else if (phi >0.0 && phi < 45.0 && theta > 0.0 && theta < 180.0){
+				finalColor = vec4(0,1,0,1);		
+		   }
+		   else{
+		   		finalColor = vec4(1,1,0,1);
+		   }
+		 //   	
+
+		 	// Diffuse & Ambient lighting
+			vec3 L = normalize(vec3(0,-1,0) ); //light positoin
+			float lambertTerm  = clamp(dot(n.xyz, -L), 0.0, 1.0);
+			vec4 lDiffuse =  vec4(1,1,1,1)* finalColor * lambertTerm;
+			vec4 lAmbient = 0.1 * finalColor;
+			lDiffuse.w = 1.0;
+			//Phongblin
+			vec3 eyeVec = vec3(eyepos - vec4(0,0,0,1)  );
+			vec3 E = normalize(eyeVec);
+			vec3 R = reflect(L, normalize(n.xyz));
+			float specular = pow(max(dot(R, E), 0.0), 40.0);
+			vec4 lSpecular =  vec4(1,1,1,1)* specular;
+
+
+		   gl_FragColor =  lAmbient + lDiffuse + lSpecular ;
+
+		}
+
+		else{
+				gl_FragColor = vec4(1,1,1,1);//textureCube(envmapTexture, rayDir);//texture2D(colorTexture, texCoord);
+
+	}
+
+	}
+`;
+
+
