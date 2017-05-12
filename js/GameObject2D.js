@@ -1,14 +1,16 @@
 
-var GameObject2D = function(gl, program, quadrics, brdfs) { 
+var GameObject2D = function(gl, program, clipped_quadrics,  lights) { 
   this.material  = new Material(gl, program);
-  for (var i =  0; i < quadrics.length; i++){
-    this.material.quadrics[i].set(quadrics[i]);
+  this.lights = lights;
+  this.clipped_quadrics = clipped_quadrics;
+  var j = 0;
+  for (var i =  0; i < this.clipped_quadrics.length; i+=1 ){
+    this.material.brdfs[i].set(this.clipped_quadrics[i].brdf);
+    this.material.properties[i].set(this.clipped_quadrics[i].property);
+    this.material.quadrics[j].set(this.clipped_quadrics[i].surfaceCoeffMatrix);
+    this.material.quadrics[j+1].set(this.clipped_quadrics[i].clipperCoeffMatrix);
+    j += 2
   }
-  
-  for (var i  = 0; i < brdfs.length; i++){
-    this.material.bdfs[i].set(brdfs[i]);
-  }
-
 
 
   this.mesh =  new Mesh(new QuadGeometry(gl), this.material);
@@ -40,55 +42,28 @@ GameObject2D.prototype.updateModelTransformation = function(){
 };		
 
 
-GameObject2D.prototype.draw = function(camera, lightSource, lightIs){ 
+GameObject2D.prototype.draw = function(camera){ 
   var E = new Mat4();
   E.set().translate(camera.position);
   Material.shared.modelViewProjMatrix.set().mul(this.modelMatrix).mul(camera.viewProjMatrix);
   Material.shared.eyePos.set(camera.position);
   Material.shared.rayDirMatrix.set().mul(E).mul(camera.viewProjMatrix).invert();
-  for (var i = 0; i < lightSource.length; i++){
-  	Material.shared.lightPos[i].set(lightSource[i]);
-  	Material.shared.lightPowerDensity[i].set(lightIs[i]);
-  	
 
-  	
+
+  for (var i = 0; i < this.lights.length; i++){
+    Material.shared.lightPos[i].set(this.lights[i].source);
+    Material.shared.lightPowerDensity[i].set(this.lights[i].intensity);
+    
+
+    
 
  
  
   }
-  //Material.shared.lightPos[0].set(...);
 
   this.mesh.draw(); 
 };
 
-
-GameObject2D.prototype.move = function(dt){
-	this.findForcesTorques();
-	netAcceleration = new Vec3(0,0,0);
-	netAngularAcceleration = 0;
-
-	for (var key in this.forces){
-		if (this.forces.hasOwnProperty(key)){
-				netAcceleration.add( this.forces[key].times(1/this.mass) );}
-	}
-
-	this.velocity.addScaled(dt, netAcceleration );
-	this.position.addScaled(dt, this.velocity);
-
-
-
-	for (var key in this.torques){
-		if (this.torques.hasOwnProperty(key)){
-				netAngularAcceleration += this.torques[key]/this.mass;
-
-		}
-	}
-
-	this.angular_velocity += dt * netAngularAcceleration;
-	this.orientation += dt* this.angular_velocity;
-
-
-}
 
 
 

@@ -8,4 +8,5 @@ Material.shared = {
   rayDirMatrix : new Mat4(),
   eyePos : new Vec3(),
   texOffset : new Vec2(),
+  ballVelocity : new Vec3(),
 };

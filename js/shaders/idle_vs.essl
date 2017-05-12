@@ -23,9 +23,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 	  	  
 	void main(void) {
 		gl_Position = vec4(vertexPosition, 1)*modelViewProjMatrix;
-		worldPos = vec4(vertexPosition, 1)*modelMatrix;
 		eyepos = vec4(eyePos, 1)*modelMatrix;
-		worldNormal = (modelMatrixInverse * vec4(vertexNormal, 1.0)).xyz;
 		color=vertexColor;
 		texCoord=vertexTexCoord;
 		rayDir = (vec4(vertexPosition,1) * rayDirMatrix).xyz;
