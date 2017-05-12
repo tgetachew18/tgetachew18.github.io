@@ -81,6 +81,7 @@ var Scene = function(gl, output) {
 
   this.camera = new PerspectiveCamera();
   this.camera.position.y += 2;
+  this.camera.position.z += 10.;
   this.timeAtLastFrame = new Date().getTime();
   
 
