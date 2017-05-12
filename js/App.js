@@ -55,7 +55,7 @@ App.prototype.update = function() {
 	if(pendingResourceNames.length === 0) {
 		// animate and draw scene
 		this.scene.update(this.gl,app.keysPressed, app.mousePressed);
-		overlay.innerHTML = "You're computer is trash skye.";
+		overlay.innerHTML = "Ready.";
 	} else {
 		overlay.innerHTML = "Loading: " + pendingResourceNames;
 	}

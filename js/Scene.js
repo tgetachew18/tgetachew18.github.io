@@ -21,6 +21,7 @@ var Scene = function(gl, output) {
   this.backfs = new Shader(gl, gl.FRAGMENT_SHADER, "back_fs.essl");
   var BEACH_BALL = new Vec4(0,0,0,0); //vec4 used as an ID so the shader recognizes objects 
   var ISLAND = new Vec4(1,0,0,0);
+  var OCEAN = new Vec4(2,0,0,0);
 
 
   this.backprogram = new Program(gl, this.backvs, this.backfs);
@@ -31,11 +32,11 @@ var Scene = function(gl, output) {
 
   var ball = new ClippedQuadric([], [], [], BEACH_BALL);
 
-  var island = new ClippedQuadric([],[], [],Vec3(3,0,0));
+  var island = new ClippedQuadric([],[], [],ISLAND);
   ball.setUnitSphere();
   ball.translate(new Vec3(2,3,0));
   island.setUnitSphere();
-  island.scale(new Vec3(9.0,0.5,5));
+  island.scale(new Vec3(9.0,0.5,10));
   this.objects.push(ball);
   this.objects.push(island);
   //Make a parasol
@@ -59,11 +60,11 @@ var Scene = function(gl, output) {
   parasolCover.scale(new Vec3(4.0,2.0,4.0));
   parasolCover.translate(new Vec3(-6.5,3.6,0));
 
-  // //Ideally reflective ocean
-  // var ocean = new ClippedQuadric([],[],[],BEACH_BALL);
-  // ocean.setInfinitePlane();
-  // ocean.translate(new Vec3(0,-3,0));
-  // this.objects.push(ocean);
+  //Ideally reflective ocean
+  var ocean = new ClippedQuadric([],[],[],OCEAN);
+  ocean.setInfinitePlane();
+  ocean.translate(new Vec3(0,-1.5,0));
+  this.objects.push(ocean);
 
   
 
