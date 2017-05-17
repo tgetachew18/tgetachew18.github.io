@@ -37,14 +37,15 @@ var Scene = function(gl, output) {
   ball.setUnitSphere();
   ball.translate(new Vec3(0,3,0));
   island.setUnitSphere();
-  island.scale(new Vec3(9.0,0.5,10));
+  island.scale(new Vec3(9.0,1.3,10));
+  island.translate(new Vec3(0,-0.5,0));
   this.objects.push(ball);
   this.objects.push(island);
   //Make a parasol
   var parasolStand = new ClippedQuadric([],[], new Vec4(1,0.4,1,0),new Vec3(3,0,0));
   parasolStand.setUnitCylinder();  
-  parasolStand.scale(new Vec3(0.2, 4.0, 0.2));
-  parasolStand.translate(new Vec3(-6.5, 3, 0));
+  parasolStand.scale(new Vec3(0.2, 3.5, 0.2));
+  parasolStand.translate(new Vec3(-6.5, 2.5, 0));
   this.objects.push(parasolStand);
 
   var parasolCover = new ClippedQuadric([],[], new Vec4(0,1,1,0),BEACH_BALL);
@@ -112,7 +113,7 @@ var Scene = function(gl, output) {
   
   var sky = new ClippedQuadric([],[],new Vec4(1,1,0,199), SKY);
   sky.setInfinitePlane();
-  sky.translate(new Vec3(0,20.5,0));
+  sky.translate(new Vec3(0,1001.5,0));
   this.objects.push(sky);
   
 
