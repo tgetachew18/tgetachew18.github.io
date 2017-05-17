@@ -1,7 +1,7 @@
 var ClippedQuadric = function(surfaceCoeffMatrix, clipperCoeffMatrix, brdf, property) {
   this.surfaceCoeffMatrix = surfaceCoeffMatrix;
   this.clipperCoeffMatrix = clipperCoeffMatrix;
-  this.brdf = Math.random();
+  this.brdf =brdf;
   this.property = property;
 }
 
@@ -48,6 +48,21 @@ ClippedQuadric.prototype.setUnitCylinder = function(){
   										0, 0, 0, 0,
   										0, 0, 0, -0.5 );
 }
+
+ClippedQuadric.prototype.setUnitCone = function(){
+  this.surfaceCoeffMatrix = new Mat4();
+  this.surfaceCoeffMatrix.set(     		1, 0, 0, 0,
+  										0, -1, 0, 0,
+  										0, 0, 1, 0,
+  										0, 0, 0, 0 );
+  this.clipperCoeffMatrix = new Mat4();
+  this.clipperCoeffMatrix.set(			0, 0, 0, 0,
+  										0, 1, 0, 0,
+  										0, 0, 0, 0,
+  										0, 0, 0, -1 );
+  this.translateClipper(new Vec3(0,-1,0));
+}	
+
 
 
 ClippedQuadric.prototype.transform  = function(t){
