@@ -16,7 +16,8 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 	float ISLAND = 1.0;
 	float OCEAN = 2.0;
 	float SKY =  4.0;
-
+	float CASTLE = 3.0;
+	float CASTLEROOF  = 6.0;
 	float intersectQuadric(mat4 A, vec4 e, vec4 d){
 		//Coefficient matrix : A
 		// Ray origin: e
@@ -187,8 +188,14 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 
 		}
 		else if (bestProp.x  ==  SKY){
-			finalColor = vec4( 0./255.0 , 100./255.0 , 245./255. , 0.0);
+			finalColor = vec4( 0.0, 0.47 , 0.745, 1.);
 
+		}
+		else if (bestProp.x == CASTLE){
+			finalColor = vec4(0.761,0.698,0.502, 1.);
+		}
+		else if (bestProp.x  == CASTLEROOF){
+			finalColor  = vec4(1.0,0.2,0.3,1.0);
 		}
 
 		
@@ -219,6 +226,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 				break;
 			}
 			vec4 r = src + dir * t;
+
 			vec4 n = normalize( r*bestA + bestA*r );
 			if (bestBrdf.a < 200.0){
 					//diffuse
@@ -227,7 +235,8 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 			}
 			else{
 				//mirror
-				contrib = contrib * bestBrdf.xyz + vec3(0,0,-1.9);
+				contrib = contrib * bestBrdf.xyz ;
+				n.y += 0.010*sin(r.x*r.y*200.);
 				dir = vec4(normalize(reflect(dir.xyz, n.xyz)), 0) ;
 				src = r + normalize(n)*0.01;
 

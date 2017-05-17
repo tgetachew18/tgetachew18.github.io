@@ -24,6 +24,7 @@ var Scene = function(gl, output) {
   var OCEAN = new Vec4(2,0,0,0);
   var SAND_CASTLE = new Vec4(3,0,0,0);
   var SKY = new Vec4(4, 0, 0, 0);
+  var CASTLEROOF = new Vec4(6, 0, 0, 0);
 
 
   this.backprogram = new Program(gl, this.backvs, this.backfs);
@@ -67,8 +68,8 @@ var Scene = function(gl, output) {
 
   var bastions = [];
   var bastion_pos = [new Vec3(0,2,8), new Vec3(4,2,8), new Vec3(0,2,4), new Vec3(4,2,4)];
-  var castleCenter = new ClippedQuadric([],[], [],BEACH_BALL);
-  var castleRoof = new ClippedQuadric([], [], [], BEACH_BALL);
+  var castleCenter = new ClippedQuadric([],[], [],SAND_CASTLE);
+  var castleRoof = new ClippedQuadric([], [], [], SAND_CASTLE);
   castleCenter.setUnitCylinder();
   castleRoof.setUnitSphere();
   castleCenter.scale(new Vec3(2.5, 1.2, 2.5));
@@ -79,11 +80,11 @@ var Scene = function(gl, output) {
   this.objects.push(castleRoof);
   var z = 1;
   for (var i = 0 ; i  < 4; i ++){
-    var bastion = new ClippedQuadric([],[], new Vec4(1,0.1,1,0),BEACH_BALL);
-    var bastionCol = new ClippedQuadric([],[], new Vec4(1,0.1,1,0),BEACH_BALL);
+    var bastion = new ClippedQuadric([],[], new Vec4(1,0.1,1,0),SAND_CASTLE);
+    var bastionCol = new ClippedQuadric([],[], new Vec4(1,0.1,1,0),SAND_CASTLE);
     bastionCol.setUnitCylinder();
     bastion.setUnitCylinder();
-    var bastionCap = new ClippedQuadric([], [],new Vec4(1,0.1,1,0), BEACH_BALL);
+    var bastionCap = new ClippedQuadric([], [],new Vec4(1,0.1,1,0), CASTLEROOF);
     bastionCap.setUnitCone();
     bastionCap.scale(new Vec3(0.4,0.4,0.4));
     bastion.scale(new Vec3(0.7, .5, 0.7));
@@ -105,7 +106,7 @@ var Scene = function(gl, output) {
 
 
   //Ideally reflective ocean
-  var ocean = new ClippedQuadric([],[],new Vec4(1,1,0,201), OCEAN);
+  var ocean = new ClippedQuadric([],[],new Vec4(0.8,0.8,0.8,201), OCEAN);
   ocean.setInfinitePlane();
   ocean.translate(new Vec3(0,-1.5,0));
   this.objects.push(ocean);
@@ -132,8 +133,8 @@ var Scene = function(gl, output) {
 
 
   this.camera = new PerspectiveCamera();
-  this.camera.position.y += 2;
-  this.camera.position.z += 10.;
+  this.camera.position.y += 6;
+  this.camera.position.z += 39.;
   this.timeAtLastFrame = new Date().getTime();
   
 
@@ -150,6 +151,8 @@ Scene.prototype.update = function(gl, keysPressed, mousePressed) {
 	var timeAtThisFrame = new Date().getTime();
 	var dt = (timeAtThisFrame - this.timeAtLastFrame) / 1000.0;
 	this.timeAtLastFrame = timeAtThisFrame;
+
+
     
 
   this.camera.move(dt, keysPressed);
