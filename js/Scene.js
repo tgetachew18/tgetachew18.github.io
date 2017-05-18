@@ -12,11 +12,7 @@ var Scene = function(gl, output) {
 
  
   // in constructor 
-  this.vsTrafo2d = new Shader(gl, gl.VERTEX_SHADER, "idle_vs.essl");
-  this.fsSolid = new Shader(gl, gl.FRAGMENT_SHADER, "blue_fs.essl"); 
-  this.fsRegular = new Shader(gl, gl.FRAGMENT_SHADER, "plain_fs.essl");
-  this.plainvs = new Shader(gl, gl.VERTEX_SHADER, "ground_vs.essl");
-  this.plainfs = new Shader(gl, gl.FRAGMENT_SHADER, "color_fs.essl");
+
   this.backvs = new Shader(gl, gl.VERTEX_SHADER, "back_vs.essl");
   this.backfs = new Shader(gl, gl.FRAGMENT_SHADER, "back_fs.essl");
   var BEACH_BALL = new Vec4(0,0,0,0); //Vec4 used as an ID so the shader recognizes objects 
@@ -28,7 +24,6 @@ var Scene = function(gl, output) {
 
 
   this.backprogram = new Program(gl, this.backvs, this.backfs);
-  this.parasolprogram =  new Program(gl, this.backvs, this.plainfs);
   this.objects = [];
   directionalLight = new Light(new Vec3(500, 1000, 0), new Vec3(1,1,1,1));
   var lights = [directionalLight];
@@ -126,7 +121,8 @@ var Scene = function(gl, output) {
 
   this.beachScene  = new GameObject2D(gl,this.backprogram, this.objects,  lights);
 
-
+  this.capTexture = new Texture2D(gl, "js/res/skytex.jpg");
+  this.beachScene.material.colorTexture.set(this.capTexture); 
 
 
  

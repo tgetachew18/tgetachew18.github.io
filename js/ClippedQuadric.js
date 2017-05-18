@@ -3,6 +3,7 @@ var ClippedQuadric = function(surfaceCoeffMatrix, clipperCoeffMatrix, brdf, prop
   this.clipperCoeffMatrix = clipperCoeffMatrix;
   this.brdf =brdf;
   this.property = property;
+  this.texture =  null;
 }
 
 ClippedQuadric.prototype.setInfinitePlane = function(){
