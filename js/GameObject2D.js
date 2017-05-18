@@ -41,6 +41,16 @@ GameObject2D.prototype.updateModelTransformation = function(){
 
 };		
 
+GameObject2D.prototype.update   = function(){
+  var j = 0;
+  for (var i =  0; i < this.clipped_quadrics.length; i+=1 ){
+    this.material.brdfs[i].set(this.clipped_quadrics[i].brdf);
+    this.material.properties[i].set(this.clipped_quadrics[i].property);
+    this.material.quadrics[j].set(this.clipped_quadrics[i].surfaceCoeffMatrix);
+    this.material.quadrics[j+1].set(this.clipped_quadrics[i].clipperCoeffMatrix);
+    j += 2
+  }
+};
 
 GameObject2D.prototype.draw = function(camera){ 
   var E = new Mat4();

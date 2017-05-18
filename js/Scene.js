@@ -25,7 +25,7 @@ var Scene = function(gl, output) {
 
   this.backprogram = new Program(gl, this.backvs, this.backfs);
   this.objects = [];
-  directionalLight = new Light(new Vec3(500, 1000, 0), new Vec3(1,1,1,1));
+  directionalLight = new Light(new Vec3(500, 1000, 0), new Vec3(2,1,1,1));
   var lights = [directionalLight];
   var ball = new ClippedQuadric([], [], new Vec4(1,0,1,0), BEACH_BALL);
 
@@ -37,7 +37,9 @@ var Scene = function(gl, output) {
   island.translate(new Vec3(0,-0.5,0));
   this.objects.push(ball);
   this.objects.push(island);
+
   //Make a parasol
+  
   var parasolStand = new ClippedQuadric([],[], new Vec4(1,0.4,1,0),new Vec3(3,0,0));
   parasolStand.setUnitCylinder();  
   parasolStand.scale(new Vec3(0.2, 3.5, 0.2));
@@ -90,6 +92,7 @@ var Scene = function(gl, output) {
     bastion.translate(bastion_pos[i]);
     bastionCol.translate(bastion_pos[i]);
     bastionCol.translate(new Vec3(0,-1,0));
+
    
     
 
@@ -101,17 +104,20 @@ var Scene = function(gl, output) {
 
 
   //Ideally reflective ocean
-  var ocean = new ClippedQuadric([],[],new Vec4(0.8,0.8,0.8,201), OCEAN);
+  var ocean = new ClippedQuadric([],[],new Vec4(0.9,0.6,0.6,201), OCEAN);
   ocean.setInfinitePlane();
   ocean.translate(new Vec3(0,-1.5,0));
   this.objects.push(ocean);
 
   
-  var sky = new ClippedQuadric([],[],new Vec4(1,1,0,199), SKY);
+  var sky = new ClippedQuadric([],[],new Vec4(0.4,0.4,0.4,199), SKY);
   sky.setInfinitePlane();
   sky.translate(new Vec3(0,1001.5,0));
   this.objects.push(sky);
-  
+
+
+
+
 
   
 
@@ -121,18 +127,24 @@ var Scene = function(gl, output) {
 
   this.beachScene  = new GameObject2D(gl,this.backprogram, this.objects,  lights);
 
-  this.capTexture = new Texture2D(gl, "js/res/skytex.jpg");
-  this.beachScene.material.colorTexture.set(this.capTexture); 
+
+  this.skyCubeTexture = new  TextureCube(gl, ["js/res/red/right.png", //x //right
+                                               "js/res/red/left.png", //-x //left
+                                               "js/res/red/top.png",  //y //top
+                                               "js/res/red/bottom.png", //-y //bottom
+                                               "js/res/red/front.png",  //z //front
+                                               "js/res/red/back.png",]); //-z //back
+  this.beachScene.material.envmapTexture.set(this.skyCubeTexture);
 
 
- 
 
 
   this.camera = new PerspectiveCamera();
   this.camera.position.y += 6;
   this.camera.position.z += 39.;
   this.timeAtLastFrame = new Date().getTime();
-  
+  this.velocity =  new Vec3(0,3.,0);
+  this.pos =   new Vec3(0,0,0);
 
 
 
@@ -147,7 +159,14 @@ Scene.prototype.update = function(gl, keysPressed, mousePressed) {
 	var timeAtThisFrame = new Date().getTime();
 	var dt = (timeAtThisFrame - this.timeAtLastFrame) / 1000.0;
 	this.timeAtLastFrame = timeAtThisFrame;
-
+  var ds = this.velocity.times(dt);
+  this.objects[0].translate(ds);
+  this.pos.add(ds);
+  this.velocity.addScaled(dt, new Vec3(0,-0.8,0));
+  this.beachScene.update();
+  if (this.pos.y < -.5){
+    this.velocity.y *= -1.0;
+  }
 
     
 

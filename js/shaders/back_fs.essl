@@ -1,15 +1,13 @@
 shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 	precision highp float;
 	varying vec2 texCoord;
-	varying vec3 color;
-	uniform sampler2D colorTexture;
 	uniform vec3 lightPos[1];
-	uniform vec3 ballVelocity;
 	uniform vec3 lightPowerDensity[1];
 	uniform mat4 quadrics[64];
 	uniform vec4 brdfs[32];
 	uniform vec4 properties[32];
 	varying vec3 rayDir;
+	uniform samplerCube envmapTexture;
 	varying vec4 eyepos;
 	float BEACHBALL = 0.0;
 	float ISLAND = 1.0;
@@ -32,15 +30,12 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 		float t1 = (-b - sqrt(discriminant))/(2.0*a);
 		float t2 = (-b + sqrt(discriminant))/(2.0*a);
 		float t = min(t1, t2);
-		if (t >= 0.0){
+		if (t > 0.0){
 			return t;
 		}
-		else{
-			return max(t1, t2);
-		}
-		return t;
 
-
+		return max(t1, t2);
+	
 
 	}
 
@@ -71,10 +66,10 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 		if (t >= 0.0){
 			return t;
 		}
-		else{
-			return max(t1, t2);
-		}
-		return t;
+	
+		return max(t1, t2);
+	
+		
 
 
 
@@ -83,7 +78,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 	float findBestHit( vec4 e, vec4 d,out mat4 bestA, out vec4 bestBrdf, out vec4 bestProp){
 		float bestT = 1000000000.0 ; //infinity
 		vec4 property;
-		for (int i = 0; i < 40; i+=2){
+		for (int i = 0; i < 44; i+=2){
 			mat4 A = quadrics[i];
 			mat4 B = quadrics[i+1];
 			property = properties[i/2];
@@ -99,7 +94,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 						
 			}
 		}
-		if (bestT == 1000000000.0){
+		if (bestT  ==   1000000000.0){
 			return -1.0;
 		}
 		return bestT;
@@ -133,11 +128,11 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 		return final;
 	}
 
-	vec4 Diffuse(vec4 n, vec3 lightpos, vec4 color){
+	vec4 Diffuse(vec4 n, vec3 lightpos, vec4 color, vec4 r){
 			 //	Diffuse & Ambient lighting
-			vec3 L = -normalize(lightpos ); //light positoin
+			vec3 L = -normalize(lightpos - r.xyz); //light positoin
 			float lambertTerm  = clamp(dot(n.xyz, -L), 0.0, 1.0);
-			vec4 lDiffuse =  vec4(1,1,1,1)* color * lambertTerm;
+			vec4 lDiffuse =  vec4(1, 0.8, 0.8, 0.8)* color * lambertTerm;
 			vec4 lAmbient = 0.3 * color;
 			vec4 final = lAmbient + lDiffuse;
 			final.w = 0.0;
@@ -151,7 +146,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 		vec3 E = normalize(eyepos.xyz);
 		vec3 R = reflect(-normalize(lightpos), normalize(n.xyz));
 		float specular = pow(max(dot(R, E), 0.0), 40.0);
-		vec4 lSpecular =  vec4(1,1,1,1)* specular;
+		vec4 lSpecular =  vec4(1, 0, 0, 0.0)* specular;
 		return lSpecular;
 
 	}
@@ -187,19 +182,19 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 
 		}
 		else if (bestProp.x  ==  SKY){
-			finalColor = texture2D(colorTexture, r.xz);//vec4( 0.0, 0.47 , 0.745, 1.);
+			finalColor = textureCube(envmapTexture, rayDir);
 
 		}
 		else if (bestProp.x == CASTLE){
 			finalColor = vec4(0.761,0.698,0.502, 1.);
 		}
 		else if (bestProp.x  == CASTLEROOF){
-			finalColor  = vec4(1.0,0.2,0.3,1.0);
+			finalColor  = vec4(1.0,0.2,0.8,1.0);
 		}
 
 		
 		if (brdf.a < 200.){ //Diffuse
-			final += Diffuse(n, lightpos,finalColor);
+			final += Diffuse(n, lightpos,finalColor, r);
 			if (brdf.a == 0.){ //Also apply phong blingy
 				final += phongblinn(n, eyepos, lightpos);
 			}
@@ -218,7 +213,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 		mat4 bestA;
 		vec3 contrib = vec3(1, 1, 1);
 		float t;
-		for (int i = 0; i < 3; i++){
+		for (int i = 0; i < 2; i++){
 			t = findBestHit(src, dir, bestA, bestBrdf, bestProp);
 			if (t < 0.0){
 				radiancetoEye = vec4(0,0,0,1);
@@ -235,7 +230,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 			else{
 				//mirror
 				contrib = contrib * bestBrdf.xyz ;
-				n.y += 0.010*sin(r.x*r.y*200.);
+				n.y += 0.005*sin(r.x*r.y*200.);
 				dir = vec4(normalize(reflect(dir.xyz, n.xyz)), 0) ;
 				src = r + normalize(n)*0.01;
 
@@ -249,7 +244,7 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 		return radiancetoEye;
 	}
 
-float rand(float n){return 2.*abs(sin(2.*fract(sin(1000.*n) * 43758.5453123)));}
+float rand(float n){return abs(sin(2.*fract(sin(1000.*n) * 43758.5453123)));}
 
 
 	void main(void) {
